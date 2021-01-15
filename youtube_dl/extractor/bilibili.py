@@ -34,7 +34,7 @@ class BiliBiliIE(InfoExtractor):
                                 anime/(?P<anime_id>\d+)/play\#
                             )(?P<id_bv>\d+)|
                             video/[bB][vV](?P<id>[^/?#&]+)
-                        )
+                        )(?:/?\?p=(?P<page>\d+))?
                     '''
 
     _TESTS = [{
@@ -126,10 +126,14 @@ class BiliBiliIE(InfoExtractor):
         mobj = re.match(self._VALID_URL, url)
         video_id = mobj.group('id') or mobj.group('id_bv')
         anime_id = mobj.group('anime_id')
+        page_id = mobj.group('page')
         webpage = self._download_webpage(url, video_id)
 
         if 'anime/' not in url:
             cid = self._search_regex(
+                r'\bcid(?:["\']:|=)(\d+),["\']page(?:["\']:|=)' + str(page_id), webpage, 'cid',	
+				default=None
+            ) or self._search_regex(
                 r'\bcid(?:["\']:|=)(\d+)', webpage, 'cid',
                 default=None
             ) or compat_parse_qs(self._search_regex(
